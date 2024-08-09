@@ -27,7 +27,7 @@ let generateSpeed=1000
 let score =0
 let isLaser = false
 let bomb;
-let bombCount = 3 // 준비된 폭탄 갯수
+let bombCount = 5 // 준비된 폭탄 갯수
 let bombActive = false
 let explosion = false
 let explosionTime = null;
