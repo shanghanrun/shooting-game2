@@ -39,10 +39,10 @@ help.innerHTML =`
 	<div>
 		총알 선택: 1(총알), 2(레이저), 3(고급레이저)
 		<br>
-		* 레이저는 연사가능
+		* 레이저는 연사가능, 레이저는 관통하며 소멸안됨
 		<br>
 		<br>
-		* 파괴된 잔해가 떨어져도 사망
+		* 수정: 잔해가 떨어지지 않게 함
 	</div>`
 help.style.position = 'absolute';
 help.style.top = '20%';
@@ -331,7 +331,7 @@ function update(){
 	}
 	for(let i=0; i<enemyList.length; i++){
 		const currentEnemy = enemyList[i]
-		if (!currentEnemy.fire){
+		if (!currentEnemy.fire){ // 잔해는 바닥으로 떨어지지 않게 함
 			currentEnemy.move()
 			if (currentEnemy.y >= canvas.height -enemyWidth){
 				gameOver = true;
