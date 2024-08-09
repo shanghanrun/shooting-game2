@@ -13,6 +13,7 @@ const enemy2Width = 64 //ufo2
 const bulletWidth=24
 const laserWidth=24
 
+
 const ufo1 = 'image/ufo.png'
 const ufo2 = 'image/ufo2.png'
 const ufo1W = enemyWidth
@@ -24,6 +25,7 @@ let speed =1
 let baseballSpeed=1.5
 let generateSpeed=1000
 let score =0
+let isLaser = false
 
 // help 텍스트
 const help = document.createElement('div')
@@ -137,7 +139,9 @@ class Bullet{
 				bulletCenterX>= currentEnemy.x && 
 				bulletCenterX <= currentEnemy.x +enemyWidth){
 				score ++;
-				this.alive = false // 죽은 총알
+				if(!isLaser){
+					this.alive = false // 죽은 총알
+				}
 				currentEnemy.reduceLife()
 				if(currentEnemy.life === 0){
 					currentEnemy.setOnFire();
@@ -260,7 +264,7 @@ function loadImage(){
 	gameOverImage.src ='image/gameover.png'
 }
 
-let isLaser = false
+
 let keysHit ={}
 function setupKeyboardListener(){
 	document.addEventListener('keydown', (e)=>{
