@@ -348,7 +348,7 @@ function update(){
 
 	if(score > 100 && score %7 === 0){
 		const spawnChance = Math.random(); // 0에서 1 사이의 난수
-		if(spawnChance < 0.2){ // 50% 확률로 적군 생성
+		if(spawnChance < 0.2){ // 20% 확률로 적군 생성
 			const enemy = new Enemy('ufo1', ufo1W, 1);
 			enemy.init();
 		}
