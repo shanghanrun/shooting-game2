@@ -11,7 +11,10 @@ const spaceshipWidth =48
 const enemyWidth =48  //ufo
 const enemy2Width = 64 //ufo2
 const bulletWidth=24
-const laserWidth=24
+const laserWidth= 40
+const strongLaserWidth=60
+
+let selectedWeapon = 'bullet'
 
 
 const ufo1 = 'image/ufo.png'
@@ -31,6 +34,7 @@ let bombCount = 5 // 준비된 폭탄 갯수
 let bombActive = false
 let explosion = false
 let explosionTime = null;
+let chance = 0.3
 
 let restartButton
 
@@ -206,6 +210,7 @@ class Bomb{
 			for (let i = 0; i < enemyList.length; i++) {
 				enemyList[i].setOnFire();
 			}
+			// enemyList =[]; //추가
 			explosion = true
 			bombActive = false; // 폭탄 터진후 bombActive false로 리셋
 		}
@@ -223,30 +228,40 @@ class Bullet{
 		bulletList.push(this)
 	}
 	run(){
-		this.y -=5  // 총알 속도
+		this.y -=7  // 총알 속도
 	}
 	checkHit(){
 		for(let i=0; i<enemyList.length; i++){
 			// const bulletCenterX = this.x + bulletWidth/2
-			const bulletX = this.x
-			const bulletX2 = this.x + bulletWidth
+			let weaponWidth
+			if(selectedWeapon ==='bullet'){
+				weaponWidth = bulletWidth
+			} else if(selectedWeapon ==='laser'){
+				weaponWidth = laserWidth
+			} else if(selectedWeapon ==='strongLaser'){
+				weaponWidth = strongLaserWidth
+			}
+			const bulletX = this.x;
+			const bulletX2 = this.x + weaponWidth;
 			const currentEnemy = enemyList[i];
+			const enemyX2 = currentEnemy.x + currentEnemy.width;
+			const bulletY2 = this.y + bulletWidth; // 총알의 하단 Y 좌표
 
 			if(this.y <=0){  //화면을 넘어가도 사라지게
 				this.alive = false;
 			}
-			if(this.y <= currentEnemy.y+enemyWidth+1 && 
-				bulletX2>= currentEnemy.x && 
-				bulletX <= currentEnemy.x +enemyWidth){
-				score ++;
-				if(!isLaser){
-					this.alive = false // 죽은 총알
+			// 충돌 검사 조건: 총알이 적군의 영역 내에 들어왔는지 확인
+			if (bulletY2 >= currentEnemy.y && this.y <= currentEnemy.y + currentEnemy.width &&
+				bulletX2 >= currentEnemy.x && bulletX <= enemyX2) {
+				score++;
+				if (!isLaser) {
+					this.alive = false;
 				}
-				currentEnemy.reduceLife()
-				if(currentEnemy.life === 0){
+				currentEnemy.reduceLife();
+				if (currentEnemy.life === 0) {
 					currentEnemy.setOnFire();
 				}
-				break; //적군을 맞췄으니 총알 루프 중단
+				break; // 적군을 맞췄으니 총알 루프 중단
 			}
 		}
 	}
@@ -303,7 +318,7 @@ class Enemy{
 		this.fireTime =Date.now();
 	}
 	isOnFire(){
-		return this.fire && Date.now() - this.fireTime <100;
+		return this.fire && Date.now() - this.fireTime <20;
 	}
 	reduceLife(){
 		if(this.life>=1) this.life--
@@ -380,12 +395,15 @@ function setupKeyboardListener(){
 		if(e.code ==='Digit2'){
 			bulletImage.src ='image/laser.png'
 			isLaser = true
+			selectedWeapon = 'laser'
 		}else if(e.code ==='Digit1'){
 			bulletImage.src ='image/bullet.png'
 			isLaser = false
+			selectedWeapon = 'bullet'
 		}else if(e.code ==='Digit3'){
 			bulletImage.src ='image/laser2.png'
 			isLaser = true
+			selectedWeapon = 'strongLaser'
 		}else if(e.code ==='Digit4'){
 			if(!bombActive){ // bombActive가 false일때만 폭탄생성
 				bombActive = true
@@ -452,6 +470,8 @@ function update(){
 	bomb?.run()
 	bomb?.checkAndExplode()
 	if(explosion){
+		// enemyList =[]
+		// bulletList=[]
 		deleteBomb()
 		explosion = false; //폭탄 폭발후 explosion 리셋
 	}
@@ -485,18 +505,27 @@ function update(){
 	console.log('bulletList.length', bulletList.length)
 	console.log('enemyList.length', enemyList.length)
 	console.log('baseballList.length', baseballList.length)
-
+	
 	if(score > 100 && score %7 === 0){
 		const spawnChance = Math.random(); // 0에서 1 사이의 난수
-		if(spawnChance < 0.2){ // 20% 확률로 적군 생성
+		if(spawnChance < chance){ // 20% 확률로 적군 생성
 			const enemy = new Enemy('ufo1', ufo1W, 1);
 			enemy.init();
 		}
 	}
-	if(score > 10000 && score %7 === 0){
+	if(score > 1000){
+		chance =0.4
+	} else if(score > 5000){
+		chance = 0.5
+	} else if(score >10000){
+		chance = 0.6
+	} else if(score >15000){
+		chance =0.7
+	}
+	if(score > 20000 && score %7 === 0){
 		const spawnChance = Math.random(); // 0에서 1 사이의 난수
-		if(spawnChance < 0.2){ // 20% 확률로 적군 생성
-			const enemy = new Enemy('ufo1', ufo1W, 1);
+		if(spawnChance < 0.02){ // 20% 확률로 적군 생성
+			const enemy = new Enemy('ufo2', ufo2W, 2);
 			enemy.init();
 		}
 	}
