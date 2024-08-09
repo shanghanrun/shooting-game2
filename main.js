@@ -26,6 +26,11 @@ let baseballSpeed=1.5
 let generateSpeed=1000
 let score =0
 let isLaser = false
+let bomb;
+let bombCount = 3 // 준비된 폭탄 갯수
+let bombActive = false
+let explosion = false
+let explosionTime = null;
 
 // help 텍스트
 const help = document.createElement('div')
@@ -38,6 +43,8 @@ help.innerHTML =`
 	<div> =================================== </div>
 	<div>
 		총알 선택: 1(총알), 2(레이저), 3(고급레이저)
+		<br>
+		   4(폭탄) 한번에 적을 쓸어 버린다. 3발 있음
 		<br>
 		* 레이저는 연사가능, 레이저는 관통하며 소멸안됨
 		<br>
@@ -55,7 +62,7 @@ document.body.appendChild(help);
 const indicate = document.createElement('h3')
 indicate.innerText ='게임 난이도 선택'
 indicate.style.position = 'absolute';
-indicate.style.top = '32%';
+indicate.style.top = '35%';
 indicate.style.left = '50%';
 indicate.style.transform = 'translate(-50%, -50%)';
 document.body.appendChild(indicate);
@@ -68,7 +75,7 @@ difficultySelect.innerHTML = `
     <option value="7">상</option>
 `;
 difficultySelect.style.position = 'absolute';
-difficultySelect.style.top = '40%';
+difficultySelect.style.top = '43%';
 difficultySelect.style.left = '50%';
 difficultySelect.style.transform = 'translate(-50%, -50%)';
 document.body.appendChild(difficultySelect);
@@ -113,6 +120,32 @@ let spaceshipX2 = spaceshipX + spaceshipWidth
 let spaceshipY = canvas.height - spaceshipWidth
 
 
+class Bomb{
+	constructor(){
+		this.x=0;
+		this.y=0;
+		this.count=0
+		this.alive=true
+	}
+	init(){
+		this.x = spaceshipX+ spaceshipWidth/2 - bulletWidth/2
+		this.y = spaceshipY
+	}
+	run(){
+		this.y -=4
+		this.count ++
+	}
+	checkAndExplode(){
+		if(this.count >= 40 ){
+			// 폭발 발생 시 화면에 있는 적 모두 제거
+			for (let i = 0; i < enemyList.length; i++) {
+				enemyList[i].setOnFire();
+			}
+			explosion = true
+			bombActive = false; // 폭탄 터진후 bombActive false로 리셋
+		}
+	}
+}
 class Bullet{
 	constructor(){
 		this.x=0;
@@ -129,15 +162,17 @@ class Bullet{
 	}
 	checkHit(){
 		for(let i=0; i<enemyList.length; i++){
-			const bulletCenterX = this.x + bulletWidth/2
+			// const bulletCenterX = this.x + bulletWidth/2
+			const bulletX = this.x
+			const bulletX2 = this.x + bulletWidth
 			const currentEnemy = enemyList[i];
 
 			if(this.y <=0){  //화면을 넘어가도 사라지게
 				this.alive = false;
 			}
-			if(this.y <= currentEnemy.y+enemyWidth && 
-				bulletCenterX>= currentEnemy.x && 
-				bulletCenterX <= currentEnemy.x +enemyWidth){
+			if(this.y <= currentEnemy.y+enemyWidth+1 && 
+				bulletX2>= currentEnemy.x && 
+				bulletX <= currentEnemy.x +enemyWidth){
 				score ++;
 				if(!isLaser){
 					this.alive = false // 죽은 총알
@@ -256,6 +291,8 @@ function loadImage(){
 
 	baseballImage = new Image()
 	baseballImage.src = 'image/baseball.png'
+	bombImage = new Image()
+	bombImage.src = 'image/bomb.png'
 
 	fireImage = new Image()
 	fireImage.src = 'image/explosion.png'
@@ -280,7 +317,13 @@ function setupKeyboardListener(){
 		}else if(e.code ==='Digit3'){
 			bulletImage.src ='image/laser2.png'
 			isLaser = true
+		}else if(e.code ==='Digit4'){
+			if(!bombActive){ // bombActive가 false일때만 폭탄생성
+				bombActive = true
+				createBomb()
+			}
 		}
+
 		if(e.code ==='Space' && isLaser ){
 			createBullet()
 		} 
@@ -299,6 +342,18 @@ function createBullet(){
 	console.log('총알생성')
 	let b = new Bullet()
 	b.init()
+}
+function createBomb(){
+	if(bombCount >0){
+		console.log('폭탄생성')
+		bomb = new Bomb()
+		bomb.init()
+		bombCount --
+	}
+}
+function deleteBomb(){
+	bomb = null
+	bombActive = false; // 폭탄삭제후 false로
 }
 
 //총알 만들기
@@ -323,6 +378,15 @@ function update(){
 
 	//! 우주선의 X좌표가 변화면 X2좌표도 업데이트 시켜줘야 됨
 	spaceshipX2 = spaceshipX + spaceshipWidth;
+
+	//폭탄 업데이트
+	bomb?.run()
+	bomb?.checkAndExplode()
+	if(explosion){
+		deleteBomb()
+		explosion = false; //폭탄 폭발후 explosion 리셋
+	}
+	
 
 	//화면 업데이트 할때마다, 총알의 y좌표 감소하는 run 함수 호출
 	for(let i=0; i<bulletList.length; i++){
@@ -360,20 +424,33 @@ function update(){
 			enemy.init();
 		}
 	}
+	if(score > 10000 && score %7 === 0){
+		const spawnChance = Math.random(); // 0에서 1 사이의 난수
+		if(spawnChance < 0.2){ // 20% 확률로 적군 생성
+			const enemy = new Enemy('ufo1', ufo1W, 1);
+			enemy.init();
+		}
+	}
+
 
 }
 
 function render(){
 	ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height)
 	ctx.drawImage(spaceshipImage, spaceshipX, spaceshipY )
-	ctx.fillText(`Score: ${score}`, 20,40)
 	ctx.fillStyle='white'
 	ctx.font = 'bold 24px Arial';
+	ctx.fillText(`Score: ${score}`, 20,40)
+	ctx.fillStyle='pink'
+	ctx.font = '20px Arial';
+	ctx.fillText(`Bomb : ${bombCount}`, 20, 60)
+	
 
+	
 	for(let i=0; i<bulletList.length; i++){
 		if(bulletList[i].alive){
 			ctx.drawImage(bulletImage, bulletList[i].x, bulletList[i].y)
-		}
+		} 
 	}
 	for(let i=0; i<enemyList.length; i++){
 		if(enemyList[i].isOnFire()){
@@ -392,6 +469,15 @@ function render(){
 			ctx.drawImage(baseballImage,baseballList[i].x, baseballList[i].y)
 		}
 	}
+	
+
+	if(bombActive){
+		ctx.drawImage(bombImage, bomb?.x, bomb?.y)
+	}
+	if(gameOver){
+		ctx.drawImage(gameOverImage, 50, 200, 300, 150)
+	}
+
 }
 
 function main(){
