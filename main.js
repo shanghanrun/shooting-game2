@@ -330,9 +330,12 @@ function update(){
 		bulletList[i].checkHit()
 	}
 	for(let i=0; i<enemyList.length; i++){
-		enemyList[i].move()
-		if (enemyList[i].y >= canvas.height -enemyWidth){
-			gameOver = true;
+		const currentEnemy = enemyList[i]
+		if (!currentEnemy.fire){
+			currentEnemy.move()
+			if (currentEnemy.y >= canvas.height -enemyWidth){
+				gameOver = true;
+			}
 		}
 	}
 	for(let i=0; i<baseballList.length; i++){
