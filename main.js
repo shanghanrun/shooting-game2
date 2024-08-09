@@ -125,7 +125,7 @@ class Bullet{
 		bulletList.push(this)
 	}
 	run(){
-		this.y -=8  // 총알 속도
+		this.y -=5  // 총알 속도
 	}
 	checkHit(){
 		for(let i=0; i<enemyList.length; i++){
@@ -135,7 +135,7 @@ class Bullet{
 			if(this.y <=0){  //화면을 넘어가도 사라지게
 				this.alive = false;
 			}
-			if(this.y <= currentEnemy.y && 
+			if(this.y <= currentEnemy.y+enemyWidth && 
 				bulletCenterX>= currentEnemy.x && 
 				bulletCenterX <= currentEnemy.x +enemyWidth){
 				score ++;
