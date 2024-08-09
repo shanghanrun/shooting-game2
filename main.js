@@ -32,6 +32,8 @@ let bombActive = false
 let explosion = false
 let explosionTime = null;
 
+let restartButton
+
 // help 텍스트
 const help = document.createElement('div')
 help.innerHTML =`
@@ -44,7 +46,7 @@ help.innerHTML =`
 	<div>
 		총알 선택: 1(총알), 2(레이저), 3(고급레이저)
 		<br>
-		   4(폭탄) 한번에 적을 쓸어 버린다. 3발 있음
+		   4(핵폭탄) 한번에 적을 쓸어 버린다!!. 3발 있음
 		<br>
 		* 레이저는 연사가능, 레이저는 관통하며 소멸안됨
 		<br>
@@ -114,6 +116,69 @@ function startGame(){
 	main()
 }
 
+// 게임 초기화 함수
+function resetGame() {
+    // gameOver = false;
+    // speed = parseInt(difficultySelect.value);
+    // score = 0;
+    // isLaser = false;
+    // bombActive = false;
+    // explosion = false;
+    // bulletList = [];
+    // enemyList = [];
+    // baseballList = [];
+    // spaceshipX = canvas.width / 2 - spaceshipWidth / 2;
+    // // restartButton.style.display = 'none'; // 재시작 버튼 숨기기
+    // // 적군 생성 타이머를 다시 설정
+    // createEnemy();
+    // createEnemy2();
+    // createBaseball();
+
+    // startGame(); // 게임 다시 시작
+	location.reload();
+}
+
+// 게임 오버 시 나타나는 재시작 버튼 생성
+let restartButtonImage = new Image()
+restartButtonImage.src = 'image/restart.png'
+
+
+// 버튼의 위치와 크기를 저장하는 변수
+let restartButtonX, restartButtonY, restartButtonWidth, restartButtonHeight;
+
+// 게임 오버 시 재시작 버튼을 생성
+function setRestartButtonPosition() {
+    restartButtonWidth = 144;
+    restartButtonHeight = 144;
+    restartButtonX = canvas.width / 2 - restartButtonWidth / 2;
+    restartButtonY = canvas.height / 2 + 100;
+}
+
+function handleGameOver() {
+	setRestartButtonPosition(); //버튼 위치 크기 설정
+    ctx.drawImage(gameOverImage, 50, 200, 300, 150);
+    ctx.drawImage(restartButtonImage, restartButtonX, restartButtonY, restartButtonWidth, restartButtonHeight);
+    
+    canvas.addEventListener('click', handleRestartButtonClick);
+
+	// 게임 오버 시 모든 적군과 기타 오브젝트를 초기화
+    // bulletList = [];
+    // enemyList = [];
+    // baseballList = [];
+}
+
+function handleRestartButtonClick(event) {
+    let x = event.offsetX;
+    let y = event.offsetY;
+
+    if (x >= restartButtonX && x <= restartButtonX + restartButtonWidth &&
+        y >= restartButtonY && y <= restartButtonY + restartButtonHeight) {
+        canvas.removeEventListener('click', handleRestartButtonClick); // 이벤트 리스너 제거
+        resetGame(); // 게임 리셋
+    }
+}
+    
+ 
 // 최초 우주선 좌표 
 let spaceshipX = canvas.width/2 -spaceshipWidth/2
 let spaceshipX2 = spaceshipX + spaceshipWidth
@@ -189,6 +254,7 @@ class Bullet{
 
 let enemyList=[]
 let baseballList=[]
+let enemyInterval1, enemyInterval2, baseballInterval;
 class Baseball{
 	constructor(){
 		this.x=0;
@@ -245,19 +311,22 @@ class Enemy{
 }
 
 function createEnemy(){   // 1초마다 적군생성
-	const interval = setInterval(()=>{
+	clearInterval(enemyInterval1)
+	enemyInterval = setInterval(()=>{
 		const enemy = new Enemy('ufo1',ufo1W,1)
 		enemy.init()
 	},generateSpeed)
 }
 function createEnemy2(){
-	const interval = setInterval(()=>{
+	clearInterval(enemyInterval2)
+	enemyInterval2 = setInterval(()=>{
 		const enemy = new Enemy('ufo2',ufo2W,2)
 		enemy.init()
 	},2000)
 }
 function createBaseball(){
-	const interval = setInterval(()=>{
+	clearInterval(baseballInterval)
+	baseballInterval = setInterval(()=>{
 		const baseball = new Baseball()
 		baseball.init()
 	},3000)
@@ -443,7 +512,7 @@ function render(){
 	ctx.fillText(`Score: ${score}`, 20,40)
 	ctx.fillStyle='pink'
 	ctx.font = '20px Arial';
-	ctx.fillText(`Bomb : ${bombCount}`, 20, 60)
+	ctx.fillText(`Nuke Bomb : ${bombCount}`, 20, 60)
 	
 
 	
@@ -475,7 +544,8 @@ function render(){
 		ctx.drawImage(bombImage, bomb?.x, bomb?.y)
 	}
 	if(gameOver){
-		ctx.drawImage(gameOverImage, 50, 200, 300, 150)
+		// ctx.drawImage(gameOverImage, 50, 200, 300, 150)
+		handleGameOver()
 	}
 
 }
