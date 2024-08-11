@@ -24,9 +24,13 @@ const ufo2W = enemy2Width
 
 
 let gameOver = false
-let speed =1
+let ufo1Speed =1
+let ufo2Speed =1.5
 let baseballSpeed=1.5
 let generateSpeed=1000
+let spaceshipSpeed =5
+let bulletSpeed =7
+let baseballCreateInterval =3000
 let score =0
 let isLaser = false
 let bomb;
@@ -228,7 +232,7 @@ class Bullet{
 		bulletList.push(this)
 	}
 	run(){
-		this.y -=7  // 총알 속도
+		this.y -= bulletSpeed  // 총알 속도
 	}
 	checkHit(){
 		for(let i=0; i<enemyList.length; i++){
@@ -311,7 +315,11 @@ class Enemy{
 		enemyList.push(this)
 	}
 	move(){
-		this.y += speed // 적군속도
+		if(this.image ==='ufo1'){
+			this.y += ufo1Speed
+		} else if(this.image === 'ufo2'){
+			this.y += ufo2Speed // 적군속도
+		}
 	}
 	setOnFire(){
 		this.fire =true;
@@ -344,7 +352,7 @@ function createBaseball(){
 	baseballInterval = setInterval(()=>{
 		const baseball = new Baseball()
 		baseball.init()
-	},3000)
+	},baseballCreateInterval)
 
 }
 
@@ -453,9 +461,9 @@ function deleteBomb(){
 
 function update(){
 	if( 'ArrowLeft' in keysHit ){  //객체안에 해당 프로퍼티 있나?
-		spaceshipX -= 5;  // 좌우 이동속도
+		spaceshipX -= spaceshipSpeed;  // 좌우 이동속도
 	} else if('ArrowRight' in keysHit){
-		spaceshipX += 5;
+		spaceshipX += spaceshipSpeed;
 	}
 	if (spaceshipX <=0){  // 좌우끝 이동 제한
 		spaceshipX =0
@@ -514,18 +522,31 @@ function update(){
 		}
 	}
 	if(score > 1000){
-		chance =0.4
+		chance =0.6
+		spaceshipSpeed = 7
+		bulletSpeed =10
+		ufo2Speed =2
 	} else if(score > 5000){
-		chance = 0.5
+		chance = 0.7
+		generateSpeed = 700
+		ufo1Speed =1.5
 	} else if(score >10000){
-		chance = 0.6
+		chance = 0.8
+		generateSpeed = 500
+		spaceshipSpeed = 8
+		bulletSpeed =12
+		baseballSpeed =2
+		baseballCreateInterval = 2000
 	} else if(score >15000){
-		chance =0.7
+		chance =0.9
+		speed = 1.5
+		baseballSpeed =3
+		ufo2Speed = 2.5
 	}
-	if(score > 20000 && score %7 === 0){
+	if(score > 10000 && score %7 === 0){
 		const spawnChance = Math.random(); // 0에서 1 사이의 난수
-		if(spawnChance < 0.02){ // 20% 확률로 적군 생성
-			const enemy = new Enemy('ufo2', ufo2W, 2);
+		if(spawnChance < 0.7){ // 40% 확률로 적군 생성
+			const enemy = new Enemy('ufo2', ufo2W, 3);
 			enemy.init();
 		}
 	}
